@@ -73,10 +73,6 @@ java -jar build/libs/ivolve-app.jar
 
 ---
 
-## Step 6: Verify the Application
-
-Verify that the application is working correctly by checking the output.
-
 ```bash
 tree
 ```

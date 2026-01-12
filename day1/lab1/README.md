@@ -20,7 +20,7 @@ gradle -v
 If Gradle is not installed, install it at first 
 
 
-![Installation](/home/shimaa/Pictures/Screenshots/Installation.png)
+![Installation](Screenshots/Installation.png)
 
 ---
 
@@ -43,7 +43,7 @@ Execute the unit tests for the project:
 gradle test
 ```
 
-![Tests](/home/shimaa/Pictures/Screenshots/test.png)
+![Tests](Screenshots/test.png)
 
 ---
 
@@ -57,7 +57,7 @@ gradle build
 
 This will generate the artifact in `build/libs/ivolve-app.jar`.
 
-![build](/home/shimaa/Pictures/Screenshots/build.png)
+![build](Screenshots/build.png)
 
 ---
 
@@ -69,7 +69,7 @@ Run the packaged Java application using:
 java -jar build/libs/ivolve-app.jar
 ```
 
-![output](/home/shimaa/Pictures/Screenshots/output.png)
+![output](Screenshots/output.png)
 
 ---
 
@@ -81,7 +81,7 @@ Verify that the application is working correctly by checking the output.
 tree
 ```
 
-![tree](/home/shimaa/Pictures/Screenshots/tree.png)
+![tree](Screenshots/tree.png)
 
 ---
 

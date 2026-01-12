@@ -37,10 +37,10 @@ EXPOSE 8080
 
 ## Step 3: Build Docker Image
 
-Build the Docker image with the tag `app1`:
+Build the Docker image with the tag `lab3`:
 
 ```bash
-docker build -t app1 .
+docker build -t lab3 .
 ```
 
 ![Build Image](Screenshots/build.png)
@@ -49,10 +49,10 @@ docker build -t app1 .
 
 ## Step 4: Run Container
 
-Run a container named `container1` from the `app1` image:
+Run a container named `container1` from the `lab3` image:
 
 ```bash
-docker run -d -p 8080:8080 --name container1 app1
+docker run -d -p 8089:8080 --name container1 lab3
 ```
 
 ![Run Container](Screenshots/run.png)
@@ -64,10 +64,10 @@ docker run -d -p 8080:8080 --name container1 app1
 Test the application by accessing it in your browser or using curl:
 
 ```bash
-curl http://localhost:8080
+curl http://localhost:8089
 ```
 
-Or open your browser and navigate to: `http://localhost:8080`
+Or open your browser and navigate to: `http://localhost:8089`
 
 ![Test App](Screenshots/test.png)
 

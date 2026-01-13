@@ -21,7 +21,7 @@ cd Docker-1
 
 ---
 
-## Step 3: Build the Application
+## Step 2: Build the Application
 
 ```bash
 mvn package

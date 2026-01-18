@@ -93,7 +93,7 @@ docker compose logs -f web_app
 docker compose down -v
 ```
 
-![stop App](Screenshots/stop.png)
+![stop App](Screenshots/remove.png)
 
 ---
 

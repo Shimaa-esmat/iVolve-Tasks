@@ -1,8 +1,5 @@
-# Lab 10 – 12: Kubernetes (K8s) for Container Orchestration
 
 ![Kubernetes Logo](https://raw.githubusercontent.com/kubernetes/kubernetes/master/logo/logo.png)
-
-
 ---
 
 # Lab 10: Node Isolation Using Taints in Kubernetes

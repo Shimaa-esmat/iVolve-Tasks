@@ -1,0 +1,56 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: nodejs-app
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: nodejs
+  template:
+    metadata:
+      labels:
+        app: nodejs
+    spec:
+      tolerations:
+        - key: node
+          operator: Equal
+          value: worker
+          effect: NoSchedule
+
+      initContainers:
+        - name: init-mysql
+          image: mysql:5.7
+          imagePullPolicy: Always
+          command:
+            - /bin/sh
+            - -c
+            - |
+              mysql -h $DB_HOST -u$DB_USER -p$DB_PASSWORD -e "
+                CREATE DATABASE IF NOT EXISTS $DB_NAME;
+                CREATE USER IF NOT EXISTS '$DB_USER_NEW'@'%' IDENTIFIED BY '$DB_USER_PASS';
+                GRANT ALL PRIVILEGES ON $DB_NAME.* TO '$DB_USER_NEW'@'%';
+                FLUSH PRIVILEGES;
+              "
+          envFrom:
+            - configMapRef:
+                name: nodejs-config
+
+      containers:
+        - name: nodejs
+          image: shimaaesmat/nodejs:lab9
+          imagePullPolicy: Always
+          ports:
+            - containerPort: 3000
+          envFrom:
+            - configMapRef:
+                name: nodejs-config
+          volumeMounts:
+            - name: nodejs-logs
+              mountPath: /app/logs
+
+      volumes:
+        - name: nodejs-logs
+          persistentVolumeClaim:
+            claimName: nodejs-pvc
+

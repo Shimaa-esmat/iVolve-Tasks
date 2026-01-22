@@ -1,0 +1,10 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: nodejs-config
+data:
+  DB_HOST: mysql-headless
+  DB_USER: root
+  DB_PASSWORD: password123456
+  PORT: "3000"
+

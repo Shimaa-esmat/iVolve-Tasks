@@ -2,9 +2,11 @@ apiVersion: v1
 kind: ConfigMap
 metadata:
   name: nodejs-config
+  namespace: ivolve
 data:
-  DB_HOST: mysql-headless
-  DB_USER: root
-  DB_PASSWORD: password123456
+  APP_NAME: "iVolve Node.js Application"
+  APP_VERSION: "1.0.0"
+  NODE_ENV: "production"
   PORT: "3000"
-
+  DB_HOST: "mysql-headless"
+  DB_NAME: "ivolve"

@@ -1,12 +1,5 @@
-FROM maven:sapmachine 
-
-# Set working directory in container
+FROM eclipse-temurin:17-jre-alpine
 WORKDIR /app
-
-# Copy JAR file
-COPY target/demo-0.0.1-SNAPSHOT.jar .
-
-# Run the application
-CMD ["java", "-jar", "demo-0.0.1-SNAPSHOT.jar"]
-
+COPY target/demo-0.0.1-SNAPSHOT.jar app.jar
+CMD ["java", "-jar", "app.jar"]
 EXPOSE 8080

@@ -1,31 +1,32 @@
 pipeline {
     agent any
-
     environment {
         IMAGE_NAME      = 'shimaaesmat/nodejs'
         DEPLOYMENT_FILE = 'deployment.yaml'
+        APP_DIR         = 'Jenkins/day10/lab22'
     }
-
     stages {
-
         stage('Run Unit Tests') {
             steps {
-                sh 'mvn test'
+                dir("${APP_DIR}") {
+                    sh 'mvn test'
+                }
             }
         }
-
         stage('Build Application') {
             steps {
-                sh 'mvn package'
+                dir("${APP_DIR}") {
+                    sh 'mvn clean package'
+                }
             }
         }
-
         stage('Build Docker Image') {
             steps {
-                sh "docker build -t ${IMAGE_NAME}:${BUILD_NUMBER} ."
+                dir("${APP_DIR}") {
+                    sh "docker build -t ${IMAGE_NAME}:${BUILD_NUMBER} ."
+                }
             }
         }
-
         stage('Push to Docker Hub') {
             steps {
                 withCredentials([usernamePassword(
@@ -34,25 +35,24 @@ pipeline {
                     passwordVariable:  'DOCKER_PASS'
                 )]) {
                     sh """
-                        docker login -u \${DOCKER_USER} -p \${DOCKER_PASS}
+                        echo \${DOCKER_PASS} | docker login -u \${DOCKER_USER} --password-stdin
                         docker push ${IMAGE_NAME}:${BUILD_NUMBER}
                     """
                 }
             }
         }
-
         stage('Delete Local Image') {
             steps {
                 sh "docker rmi ${IMAGE_NAME}:${BUILD_NUMBER}"
             }
         }
-
         stage('Update Deployment File') {
             steps {
-                sh "sed -i 's|image:.*|image: ${IMAGE_NAME}:${BUILD_NUMBER}|g' ${DEPLOYMENT_FILE}"
+                dir("${APP_DIR}") {
+                    sh "sed -i 's|image:.*|image: ${IMAGE_NAME}:${BUILD_NUMBER}|g' ${DEPLOYMENT_FILE}"
+                }
             }
         }
-
         stage('Deploy to Kubernetes') {
             steps {
                 withCredentials([
@@ -60,7 +60,7 @@ pipeline {
                     string(credentialsId: 'APIServer',            variable: 'APISERVER')
                 ]) {
                     sh """
-                        kubectl apply -f ${DEPLOYMENT_FILE} \
+                        kubectl apply -f ${APP_DIR}/${DEPLOYMENT_FILE} \
                             --server=\${APISERVER} \
                             --token=\${TOKEN} \
                             --insecure-skip-tls-verify=true
@@ -69,7 +69,6 @@ pipeline {
             }
         }
     }
-
     post {
         always {
             echo 'Pipeline completed.'

@@ -19,7 +19,7 @@ spec:
       - name: jenkins-dockerhub-secret
       containers:
       - name: app-container
-        image: shimaaesmat/nodejs:latest
+        image: shimaaesmat/nodejs:1
         ports:
-        - containerPort: 3000
+        - containerPort: 8080
         imagePullPolicy: Always

@@ -1,0 +1,84 @@
+pipeline {
+    agent any
+
+    environment {
+        IMAGE_NAME      = 'shimaaesmat/nodejs'
+        DEPLOYMENT_FILE = 'deployment.yaml'
+    }
+
+    stages {
+
+        stage('Run Unit Tests') {
+            steps {
+                sh 'mvn test'
+            }
+        }
+
+        stage('Build Application') {
+            steps {
+                sh 'mvn package'
+            }
+        }
+
+        stage('Build Docker Image') {
+            steps {
+                sh "docker build -t ${IMAGE_NAME}:${BUILD_NUMBER} ."
+            }
+        }
+
+        stage('Push to Docker Hub') {
+            steps {
+                withCredentials([usernamePassword(
+                    credentialsId:     'DockerHub',
+                    usernameVariable:  'DOCKER_USER',
+                    passwordVariable:  'DOCKER_PASS'
+                )]) {
+                    sh """
+                        docker login -u \${DOCKER_USER} -p \${DOCKER_PASS}
+                        docker push ${IMAGE_NAME}:${BUILD_NUMBER}
+                    """
+                }
+            }
+        }
+
+        stage('Delete Local Image') {
+            steps {
+                sh "docker rmi ${IMAGE_NAME}:${BUILD_NUMBER}"
+            }
+        }
+
+        stage('Update Deployment File') {
+            steps {
+                sh "sed -i 's|image:.*|image: ${IMAGE_NAME}:${BUILD_NUMBER}|g' ${DEPLOYMENT_FILE}"
+            }
+        }
+
+        stage('Deploy to Kubernetes') {
+            steps {
+                withCredentials([
+                    string(credentialsId: 'ServiceAccount-Token', variable: 'TOKEN'),
+                    string(credentialsId: 'APIServer',            variable: 'APISERVER')
+                ]) {
+                    sh """
+                        kubectl apply -f ${DEPLOYMENT_FILE} \
+                            --server=\${APISERVER} \
+                            --token=\${TOKEN} \
+                            --insecure-skip-tls-verify=true
+                    """
+                }
+            }
+        }
+    }
+
+    post {
+        always {
+            echo 'Pipeline completed.'
+        }
+        success {
+            echo 'Pipeline succeeded.'
+        }
+        failure {
+            echo 'Pipeline failed.'
+        }
+    }
+}

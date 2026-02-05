@@ -1,0 +1,119 @@
+@Library('jenkins-shared-library') _
+
+pipeline {
+    agent {
+        label 'jenkins-slave'
+    }
+    
+    environment {
+        DOCKER_REGISTRY = 'docker.io'
+        DOCKER_USERNAME = 'yourusername'
+        IMAGE_NAME = 'demo-app'
+        IMAGE_TAG = "${BUILD_NUMBER}"
+        FULL_IMAGE_NAME = "${DOCKER_REGISTRY}/${DOCKER_USERNAME}/${IMAGE_NAME}:${IMAGE_TAG}"
+    }
+    
+    tools {
+        maven 'Maven-3.9'
+        jdk 'JDK-17'
+    }
+    
+    stages {
+        stage('Checkout') {
+            steps {
+                script {
+                    echo "Checking out code from repository..."
+                    git branch: 'main', 
+                        url: 'https://github.com/IbrahimAdel15/Jenkins_App.git'
+                }
+            }
+        }
+        
+        stage('Run Unit Tests') {
+            steps {
+                script {
+                    runUnitTest()
+                }
+            }
+        }
+        
+        stage('Build Application') {
+            steps {
+                script {
+                    buildApp()
+                }
+            }
+        }
+        
+        stage('Build Docker Image') {
+            steps {
+                script {
+                    buildImage(
+                        imageName: IMAGE_NAME,
+                        imageTag: IMAGE_TAG,
+                        dockerRegistry: "${DOCKER_REGISTRY}/${DOCKER_USERNAME}"
+                    )
+                }
+            }
+        }
+        
+        stage('Scan Docker Image') {
+            steps {
+                script {
+                    scanImage(FULL_IMAGE_NAME)
+                }
+            }
+        }
+        
+        stage('Push Docker Image') {
+            steps {
+                script {
+                    pushImage(FULL_IMAGE_NAME, 'dockerhub-credentials')
+                }
+            }
+        }
+        
+        stage('Remove Image Locally') {
+            steps {
+                script {
+                    removeImageLocally(FULL_IMAGE_NAME)
+                }
+            }
+        }
+        
+        stage('Deploy to Kubernetes') {
+            steps {
+                script {
+                    deployOnK8s(
+                        namespace: 'default',
+                        deploymentFile: 'k8s/deployment.yaml',
+                        kubeconfigId: 'kubeconfig-credentials'
+                    )
+                }
+            }
+        }
+    }
+    
+    post {
+        success {
+            echo 'Pipeline completed successfully!'
+            emailext(
+                subject: "SUCCESS: Job '${env.JOB_NAME} [${env.BUILD_NUMBER}]'",
+                body: "Pipeline completed successfully. Check console output at ${env.BUILD_URL}",
+                to: 'team@example.com'
+            )
+        }
+        failure {
+            echo 'Pipeline failed!'
+            emailext(
+                subject: "FAILURE: Job '${env.JOB_NAME} [${env.BUILD_NUMBER}]'",
+                body: "Pipeline failed. Check console output at ${env.BUILD_URL}",
+                to: 'team@example.com'
+            )
+        }
+        always {
+            echo 'Cleaning up workspace...'
+            cleanWs()
+        }
+    }
+}

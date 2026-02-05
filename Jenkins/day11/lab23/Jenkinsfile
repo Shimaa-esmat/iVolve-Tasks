@@ -9,56 +9,41 @@ pipeline {
         FULL_IMAGE_NAME = "${DOCKER_REGISTRY}/${DOCKER_USERNAME}/${IMAGE_NAME}:${IMAGE_TAG}"
     }
 
-    tools {
-        maven 'Maven-3.9'
-        jdk 'JDK-17'
-    }
-
     stages {
+        stage('Load Shared Steps') {
+            steps {
+                script {
+                    runUnitTest = load 'vars/runUnitTest.groovy'
+                    buildApp = load 'vars/buildApp.groovy'
+                    buildImage = load 'vars/buildImage.groovy'
+                    scanImage = load 'vars/scanImage.groovy'
+                    pushImage = load 'vars/pushImage.groovy'
+                    removeImageLocally = load 'vars/removeImageLocally.groovy'
+                    deployOnK8s = load 'vars/deployOnK8s.groovy'
+                }
+            }
+        }
 
         stage('RunUnitTest') {
             steps { script { runUnitTest() } }
         }
-
         stage('BuildApp') {
             steps { script { buildApp() } }
         }
-
         stage('BuildImage') {
-            steps {
-                script {
-                    buildImage(
-                        imageName: IMAGE_NAME,
-                        imageTag: IMAGE_TAG,
-                        dockerRegistry: "${DOCKER_REGISTRY}/${DOCKER_USERNAME}"
-                    )
-                }
-            }
+            steps { script { buildImage(IMAGE_NAME, IMAGE_TAG, "${DOCKER_REGISTRY}/${DOCKER_USERNAME}") } }
         }
-
         stage('ScanImage') {
             steps { script { scanImage(FULL_IMAGE_NAME) } }
         }
-
         stage('PushImage') {
             steps { script { pushImage(FULL_IMAGE_NAME, 'dockerhub-credentials') } }
         }
-
         stage('RemoveImageLocally') {
             steps { script { removeImageLocally(FULL_IMAGE_NAME) } }
         }
-
         stage('DeployOnK8s') {
-            steps {
-                script {
-                    deployOnK8s(
-                        namespace: 'default',
-                        deploymentFile: 'K8s/deployment.yaml',
-                        kubeconfigId: 'kubeconfig-credentials'
-                    )
-                }
-            }
+            steps { script { deployOnK8s('default', 'K8s/deployment.yaml', 'kubeconfig-credentials') } }
         }
     }
 }
-

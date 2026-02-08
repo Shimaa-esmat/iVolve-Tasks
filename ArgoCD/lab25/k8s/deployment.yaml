@@ -16,7 +16,7 @@ spec:
     spec:
       containers:
       - name: jenkins-app
-        image: shimaaesmat/jenkins-app:latest
+        image: shimaaesmat/jenkins-app:17
         ports:
         - containerPort: 3000
           name: http

@@ -15,7 +15,7 @@ sudo apt install -y ansible
 ansible --version
 ```
 
-![version](/Screenshots/ansiblev.png)
+![version](Screenshots/ansiblev.png)
 
 ---
 
@@ -26,8 +26,8 @@ ssh-keygen -t rsa -b 4096 -C "ansible-control-key"
 ls -la ~/.ssh/
 ```
 
-![key](/Screenshots/key.png)
-![verifykey](/Screenshots/verifykey.png)
+![key](Screenshots/key.png)
+![verifykey](Screenshots/verifykey.png)
 
 ---
 
@@ -55,7 +55,7 @@ shimaa@Ubuntu24:~/iVolve-Tasks/Ansible/lab26$ cat inventory
 node1 ansible_host=192.168.113.137 ansible_user=shimaa
 ```
 
-![AnsibleConnectivity](/Screenshots/AnsibleConnectivity.png)
+![AnsibleConnectivity](Screenshots/AnsibleConnectivity.png)
 
 ---
 
@@ -67,4 +67,4 @@ ansible all -m shell -a "df -h"
 ansible all -m shell -a "df -h /"
 ```
 
-![diskspace](/Screenshots/diskspace.png)
+![diskspace](Screenshots/diskspace.png)

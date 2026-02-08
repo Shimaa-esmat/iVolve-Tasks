@@ -51,7 +51,7 @@ nano nginx.yml
 ansible-playbook -i inventory nginx.yml
 ```
 
-![run](/Screenshots/run.png)
+![run](Screenshots/run.png)
 
 ---
 
@@ -61,5 +61,5 @@ ansible-playbook -i inventory nginx.yml
 curl http://192.168.113.137
 ```
 
-![verify](/Screenshots/verify.png)
+![verify](Screenshots/verify.png)
 

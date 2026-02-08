@@ -39,7 +39,8 @@ pipeline {
             steps {
                 script {
                     echo "Building Docker image..."
-                    dockerImage = docker.build("${DOCKER_HUB_REPO}:${IMAGE_TAG}", "./Jenkins_App")
+                    dockerImage = docker.build("${DOCKER_HUB_REPO}:${IMAGE_TAG}", "./ArgoCD/lab25")
+
                     echo "Docker image built successfully: ${DOCKER_HUB_REPO}:${IMAGE_TAG}"
                 }
             }

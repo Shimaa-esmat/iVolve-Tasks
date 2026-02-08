@@ -1,135 +1,60 @@
 pipeline {
     agent any
-    
+
     environment {
         DOCKER_HUB_REPO = 'shimaaesmat/jenkins-app'
         DOCKER_HUB_CRED = 'dockerhub-creds'
         GITHUB_REPO = 'https://github.com/Shimaa-esmat/iVolve-Tasks.git'
         GITHUB_CRED = 'github-token'
         IMAGE_TAG = "${BUILD_NUMBER}"
-        GIT_BRANCH = 'main'
+        APP_PATH = './ArgoCD/lab25'
     }
-    
+
     stages {
+
         stage('Checkout Code') {
             steps {
-                script {
-                    echo "Checking out code from GitHub..."
-                    git branch: "${GIT_BRANCH}",
-                        credentialsId: "${GITHUB_CRED}",
-                        url: "${GITHUB_REPO}"
-                }
+                git branch: 'main', credentialsId: "${GITHUB_CRED}", url: "${GITHUB_REPO}"
             }
         }
-        
-        stage('Build Application') {
+
+        stage('Build App') {
             steps {
-                script {
-                    echo "Building the application..."
-                    // If your app needs build steps (npm, maven, etc.)
-                    // sh 'npm install'
-                    // sh 'npm run build'
-                    // sh 'mvn clean package'
-                    echo "Application build completed successfully"
-                }
+                sh "cd ${APP_PATH} && mvn clean package -DskipTests"
             }
         }
-        
+
         stage('Build Docker Image') {
             steps {
                 script {
-                    echo "Building Docker image..."
-                    dockerImage = docker.build("${DOCKER_HUB_REPO}:${IMAGE_TAG}", "./ArgoCD/lab25")
-
-                    echo "Docker image built successfully: ${DOCKER_HUB_REPO}:${IMAGE_TAG}"
+                    dockerImage = docker.build("${DOCKER_HUB_REPO}:${IMAGE_TAG}", "${APP_PATH}")
                 }
             }
         }
-        
+
         stage('Push to Docker Hub') {
             steps {
                 script {
-                    echo "Pushing Docker image to Docker Hub..."
                     docker.withRegistry('https://registry.hub.docker.com', "${DOCKER_HUB_CRED}") {
                         dockerImage.push("${IMAGE_TAG}")
                         dockerImage.push("latest")
                     }
-                    echo "Docker image pushed successfully"
                 }
             }
         }
-        
-        stage('Delete Local Docker Image') {
+
+        stage('Update Deployment') {
             steps {
-                script {
-                    echo "Cleaning up local Docker images..."
-                    sh """
-                        docker rmi ${DOCKER_HUB_REPO}:${IMAGE_TAG} || true
-                        docker rmi ${DOCKER_HUB_REPO}:latest || true
-                    """
-                    echo "Local Docker images deleted successfully"
-                }
+                sh """
+                    sed -i 's|image:.*|image: ${DOCKER_HUB_REPO}:${IMAGE_TAG}|g' ArgoCD/lab25/k8s/deployment.yaml
+                    git config user.email "jenkins@ci.com"
+                    git config user.name "Jenkins CI"
+                    git add ArgoCD/lab25/k8s/deployment.yaml
+                    git commit -m "Update image ${IMAGE_TAG}" || echo "No changes"
+                    git push https://${GITHUB_CRED}@github.com/Shimaa-esmat/iVolve-Tasks.git main
+                """
             }
-        }
-        
-        stage('Update Deployment Manifest') {
-            steps {
-                script {
-                    echo "Updating deployment.yaml with new image tag..."
-                    sh """
-                        sed -i 's|image: ${DOCKER_HUB_REPO}:.*|image: ${DOCKER_HUB_REPO}:${IMAGE_TAG}|g' k8s/deployment.yaml
-                        cat k8s/deployment.yaml | grep image:
-                    """
-                    echo "Deployment manifest updated successfully"
-                }
-            }
-        }
-        
-        stage('Commit and Push to GitHub') {
-            steps {
-                script {
-                    echo "Pushing updated manifest to GitHub..."
-                    withCredentials([usernamePassword(credentialsId: "${GITHUB_CRED}", 
-                                                     usernameVariable: 'GIT_USERNAME', 
-                                                     passwordVariable: 'GIT_PASSWORD')]) {
-                        sh """
-                            git config user.email "jenkins@ci.com"
-                            git config user.name "Jenkins CI"
-                            git add k8s/deployment.yaml
-                            git commit -m "Update image to ${DOCKER_HUB_REPO}:${IMAGE_TAG} - Build #${BUILD_NUMBER}" || echo "No changes to commit"
-                            git push https://${GIT_USERNAME}:${GIT_PASSWORD}@github.com/YOUR_GITHUB_USERNAME/YOUR_REPO.git ${GIT_BRANCH}
-                        """
-                    }
-                    echo "Changes pushed to GitHub successfully"
-                }
-            }
-        }
-    }
-    
-    post {
-        success {
-            echo """
-                ========================================
-                Pipeline executed successfully!
-                ========================================
-                Docker Image: ${DOCKER_HUB_REPO}:${IMAGE_TAG}
-                Build Number: ${BUILD_NUMBER}
-                ArgoCD will now sync the changes automatically
-                ========================================
-            """
-        }
-        failure {
-            echo """
-                ========================================
-                Pipeline failed!
-                ========================================
-                Please check the logs above for errors
-                ========================================
-            """
-        }
-        always {
-            echo "Cleaning up workspace..."
-            cleanWs()
         }
     }
 }
+

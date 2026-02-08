@@ -1,0 +1,8 @@
+---
+- name: Install Docker and Kubectl using roles
+  hosts: managed
+  become: yes
+
+  roles:
+    - docker
+    - kubectl

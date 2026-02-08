@@ -69,5 +69,5 @@ ansible-playbook -i inventory mysql.yml --ask-vault-pass
 mysql -u ivolve_user -p
 ```
 
-![database](/Screenshots/db.png)
+![database](Screenshots/db.png)
 

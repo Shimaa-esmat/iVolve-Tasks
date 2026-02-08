@@ -7,7 +7,7 @@ pipeline {
         GITHUB_REPO = 'https://github.com/Shimaa-esmat/iVolve-Tasks.git'
         GITHUB_CRED = 'github-token'
         IMAGE_TAG = "${BUILD_NUMBER}"
-        APP_PATH = './ArgoCD/lab25'
+        APP_PATH = './ArgoCD/lab25/Jenkins_App'
     }
 
     stages {

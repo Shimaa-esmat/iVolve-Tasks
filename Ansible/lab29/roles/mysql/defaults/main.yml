@@ -1,0 +1,9 @@
+---
+# Default variables for MySQL role
+mysql_packages:
+  - mysql-server
+  - python3-pymysql
+
+mysql_service_name: mysql
+mysql_config_file: /etc/mysql/mysql.conf.d/mysqld.cnf
+mysql_root_home: /root

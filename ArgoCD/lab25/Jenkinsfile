@@ -43,20 +43,21 @@ pipeline {
             }
         }
 
-        stage('Update Deployment') {
-            steps {
-                sh "sed -i s|image:.*|image: shimaaesmat/jenkins-app:${IMAGE_TAG}|g ${APP_PATH}/k8s/deployment.yaml"
-                withCredentials([string(credentialsId: "${GITHUB_CRED}", variable: 'GITHUB_TOKEN')]) {
-                    sh """
-                        git config user.email "jenkins@ci.com"
-                        git config user.name "Jenkins CI"
-                        git add ${APP_PATH}/k8s/deployment.yaml
-                        git commit -m "Update image ${IMAGE_TAG}"
-                        git push https://${GITHUB_TOKEN}@github.com/Shimaa-esmat/iVolve-Tasks.git main
-                    """
-                }
-            }
-        }
+	stage('Update Deployment') {
+	    steps {
+		sh "sed -i 's|image:.*|image: ${DOCKER_HUB_REPO}:${IMAGE_TAG}|' ${APP_PATH}/k8s/deployment.yaml"
+		withCredentials([string(credentialsId: "${GITHUB_CRED}", variable: 'GITHUB_TOKEN')]) {
+		    sh """
+			git config user.email "jenkins@ci.com"
+			git config user.name "Jenkins CI"
+			git add ${APP_PATH}/k8s/deployment.yaml
+			git commit -m "Update image ${IMAGE_TAG}"
+			git push https://${GITHUB_TOKEN}@github.com/Shimaa-esmat/iVolve-Tasks.git main
+		    """
+		}
+	    }
+	}
+
 
     }
 }
